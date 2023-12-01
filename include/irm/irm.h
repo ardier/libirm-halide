@@ -20,6 +20,7 @@
 #include "irm/Mutations/CallReplacement.h"
 #include "irm/Mutations/CmpInstPredicateReplacement.h"
 #include "irm/Mutations/ConstantReplacement.h"
+#include "irm/Mutations/HalideReplacement.h"
 #include "irm/Mutations/IntrinsicReplacement.h"
 #include "irm/Mutations/NegateTruncReplacement.h"
 #include "irm/Mutations/NegateXORReplacement.h"

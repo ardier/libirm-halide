@@ -11,6 +11,7 @@ set (SOURCES
   SwapBinaryOperands.cpp
   SwapInstructionWithOperand.cpp
   VoidCallRemoval.cpp
+  HalideReplacement.cpp
 )
 
 add_library(irm ${SOURCES})
