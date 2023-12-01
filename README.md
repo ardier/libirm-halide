@@ -224,6 +224,16 @@ VoidCallRemoval(bool onlyIntrinsics)
 
 Removes a call to a `void` function or intrinsic. There are two shortcut classes `RemoveVoidFunctionCall` and `RemoveVoidIntrinsicsCall`, that remove only function calls and only intrinsics, respectively.
 
+
+## Implementing Halide Mutation operators
+Here is a list of files that need to be modified to add a new type mutation operators:
+```
+include/irm/Mutations/HalideReplacement.h
+include/irm/irm.h
+lib/CMakeLists.txt
+lib/HalideReplacement.cpp
+```
+
 ## Contributing
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
