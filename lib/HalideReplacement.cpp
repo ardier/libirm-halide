@@ -24,43 +24,65 @@
 #include <llvm/IR/Module.h>
 #include <llvm/Support/raw_ostream.h>
 #include <string>
-
+#include <iostream>
 using namespace irm;
+using std::cout;
+using std::endl;
 
-HalideReplacement::HalideReplacement(std::string functionPrefix, std::string replaceFunctionPrefix)
-    : functionPrefix(functionPrefix), replaceFunctionPrefix(replaceFunctionPrefix) {}
+HalideReplacement::HalideReplacement(std::vector<std::pair<std::string, std::string>> mappings)
+    : mappings(std::move(mappings)) {}
 
 bool HalideReplacement::canMutate(llvm::Instruction *instruction) {
+    assert(instruction);
+    std::string instructionStr;
+    llvm::raw_string_ostream rso(instructionStr);
+    instruction->print(rso);
+    rso.flush();
 
-  assert(instruction);
-  std::string instructionStr;
-  llvm::raw_string_ostream rso(instructionStr);
-  instruction->print(rso);
-  rso.flush();
-
-  // if instruction does not inclucde "Halidepl" return false
-  if (instructionStr.find(functionPrefix) == std::string::npos) {
-    return false;
-  }
-
-  return true;
+    // Iterate through all mappings to see if any function prefix matches the instruction string.
+    for (const auto& mapping : mappings) {
+        if (instructionStr.find(mapping.first) != std::string::npos) {
+            return true; // Found a match, can mutate
+        }
+    }
+    return false; // No matches found
 }
 
 void HalideReplacement::mutate(llvm::Instruction *instruction) {
-  assert(instruction);
+    assert(instruction);
 
-  // get invoke instruction
-  llvm::InvokeInst *invokeInst = llvm::dyn_cast<llvm::InvokeInst>(instruction);
+    // This example mutation logic might need to be significantly updated depending on your needs
+    // Particularly since you now have multiple possible replacements
 
-  // get the function
-  llvm::Function *function = invokeInst->getCalledFunction();
+    // Attempting a simplistic approach: replace the first match found
+    for (const auto& mapping : mappings) {
+        std::string instructionStr;
+        llvm::raw_string_ostream rso(instructionStr);
+        instruction->print(rso);
+        rso.flush();
 
-  std::string functionName = function->getName().str();
-  std::string newFunctionName = functionName;
-  newFunctionName.replace(
-      newFunctionName.find(functionPrefix), functionPrefix.length(), replaceFunctionPrefix);
+        size_t pos = instructionStr.find(mapping.first);
+        if (pos != std::string::npos) {
+            // Logic to replace instruction based on the specific mapping found
+            // This is highly dependent on what the mutation entails and the specifics of your use case
+            // For example, changing function calls, operands, etc., requires detailed LLVM IR manipulation
+            // Below is a very simplified and likely incorrect example just to illustrate handling the found mapping
 
-  llvm::Module *module = function->getParent();
-  llvm::Function *newFunction = module->getFunction(newFunctionName);
-  invokeInst->setCalledFunction(newFunction);
+            // Get invoke instruction (if it's indeed an invoke instruction; similar checks needed for other types)
+            if (llvm::InvokeInst *invokeInst = llvm::dyn_cast<llvm::InvokeInst>(instruction)) {
+                llvm::Function *function = invokeInst->getCalledFunction();
+                if (function) {
+                    std::string functionName = function->getName().str();
+                    std::string newFunctionName = functionName.replace(pos, mapping.first.length(), mapping.second);
+
+                    llvm::Module *module = function->getParent();
+                    llvm::Function *newFunction = module->getFunction(newFunctionName);
+                    if (newFunction) {
+                        invokeInst->setCalledFunction(newFunction);
+                    }
+                }
+            }
+            break; // Assuming only one mutation per instruction for this example
+        }
+    }
 }
